@@ -66,7 +66,7 @@ export default function Home() {
             <br className="hidden sm:block" />
             in{" "}
             <span className="relative inline-block">
-              <span className="blue-100 text-blue-800 px-2 py-1 rounded-md font-mono tracking-tight">
+              <span className="text-blue-500 px-2 py-1 rounded-md font-mono tracking-tight">
                 seconds
               </span>
               {/* Underline decoration */}

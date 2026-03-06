@@ -5,12 +5,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Loader2, ArrowRight, CheckCircle2, FileCode2,
     FlaskConical, LayoutTemplate, ShieldAlert, Sparkles,
-    GitBranch, Shield, Zap, RotateCcw, TrendingUp
+    GitBranch, Shield, Zap, RotateCcw, TrendingUp,
+    LayoutDashboard, Activity, ShieldCheck, Database, Settings,
+    Command, User, Bell, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/Navbar";
 import { ThreeDScene } from "@/components/ThreeDScene";
+
+// ─── Sidebar nav items (mirrors InteractiveDashboard) ─────────────────────────
+const reportNavItems = [
+    { icon: <LayoutDashboard className="w-4 h-4" />, label: "Overview" },
+    { icon: <Activity className="w-4 h-4" />,        label: "Analytics" },
+    { icon: <GitBranch className="w-4 h-4" />,       label: "Repositories" },
+    { icon: <ShieldCheck className="w-4 h-4" />,     label: "Security" },
+    { icon: <Database className="w-4 h-4" />,        label: "Data" },
+    { icon: <Settings className="w-4 h-4" />,        label: "Settings" },
+];
 
 type JobState = "idle" | "processing" | "complete" | "error";
 
@@ -225,14 +237,14 @@ export default function RepoAnalysisDashboard() {
                                 >
                                     Analyze any{" "}
                                     <span className="relative inline-block">
-                                        <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
+                                        <span className="bg-gradient-to-r from-blue-500 via-blue-500 to-blue-500 bg-clip-text text-transparent">
                                             codebase
                                         </span>
                                         <motion.span
                                             initial={{ scaleX: 0 }}
                                             animate={{ scaleX: 1 }}
                                             transition={{ delay: 0.7, duration: 0.5, ease: "easeOut" }}
-                                            className="absolute -bottom-1 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 rounded-full origin-left"
+                                            className="absolute -bottom-1 left-0 right-0 h-[3px] bg-blue-500 rounded-full origin-left"
                                         />
                                     </span>{" "}
                                     instantly.
@@ -246,7 +258,7 @@ export default function RepoAnalysisDashboard() {
                                     className="text-lg md:text-xl text-slate-500 max-w-xl font-normal leading-relaxed mb-10"
                                 >
                                     Paste a GitHub URL. Get architecture summaries, vulnerability
-                                    reports, and refactoring maps in seconds — not hours.
+                                    reports, and refactoring maps in seconds not hours.
                                 </motion.p>
 
                                 {/* Search form */}
