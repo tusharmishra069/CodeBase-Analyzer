@@ -88,10 +88,11 @@ class CodeAnalyzer:
         response_text = chat_completion.choices[0].message.content.strip()
         
         # Clean up in case the LLM returned markdown despite instructions
-        response_text = re.sub(r"```json\s*", "", response_text)
-        response_text = re.sub(r"```\s*$", "", response_text)
-        
         try:
+            start = response_text.find('{')
+            end = response_text.rfind('}') + 1
+            if start != -1 and end != 0:
+                response_text = response_text[start:end]
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             print(f"Failed to parse LLM response as JSON: {response_text}")

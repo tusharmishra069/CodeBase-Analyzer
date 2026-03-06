@@ -1,320 +1,202 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2, ArrowRight, CheckCircle2, FileCode2, FlaskConical, LayoutTemplate, ShieldAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
+import { motion } from "framer-motion";
+import { ArrowRight, BookOpen, Sparkles, Star } from "lucide-react";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Features } from "@/components/Features";
 import { Pricing } from "@/components/Pricing";
 import { Footer } from "@/components/Footer";
+import { InteractiveDashboard } from "@/components/InteractiveDashboard";
 import { ThreeDScene } from "@/components/ThreeDScene";
+import { Button } from "@/components/ui/button";
 
-type JobState = "idle" | "processing" | "complete" | "error";
+// ─── Trusted-by logos (text-based, no images) ────────────────────────────────
+const trustedBy = ["Vercel", "Linear", "Stripe", "Supabase", "Railway", "PlanetScale"];
 
 export default function Home() {
-  const [url, setUrl] = useState("");
-  const [jobState, setJobState] = useState<JobState>("idle");
-  const [progress, setProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState("");
-  const [error, setError] = useState("");
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
-
-  const API_BASE = "http://localhost:8000/api";
-
-  const handleAnalyze = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url.includes("github.com")) {
-      setError("Please enter a valid GitHub repository URL");
-      return;
-    }
-
-    setError("");
-    setJobState("processing");
-    setProgress(5);
-    setStatusMessage("Submitting to AI Analyzer...");
-
-    // Smooth scroll to top when starting
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    try {
-      const res = await fetch(`${API_BASE}/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-
-      if (!res.ok) throw new Error("Failed to start analysis");
-
-      const data = await res.json();
-      setJobId(data.job_id);
-    } catch (err) {
-      setError("Backend connection failed. Is the Python API running?");
-      setJobState("error");
-    }
-  };
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    const checkStatus = async () => {
-      if (!jobId) return;
-      try {
-        const res = await fetch(`${API_BASE}/jobs/${jobId}/status`);
-        const data = await res.json();
-
-        setProgress(data.progress);
-        setStatusMessage(data.message);
-
-        if (data.status === "COMPLETED") {
-          setResult(data.result);
-          setJobState("complete");
-          clearInterval(interval);
-        } else if (data.status === "FAILED") {
-          setError(data.message);
-          setJobState("error");
-          clearInterval(interval);
-        }
-      } catch (err) {
-        console.error("Polling error", err);
-      }
-    };
-
-    if (jobState === "processing" && jobId) {
-      interval = setInterval(checkStatus, 3000);
-    }
-
-    return () => clearInterval(interval);
-  }, [jobId, jobState]);
-
   return (
-    <div className="min-h-screen bg-grid-white relative">
+    <div className="min-h-screen bg-grid-white relative overflow-x-hidden">
       <Navbar />
 
-      <main className="flex flex-col items-center pt-32 pb-20 w-full relative z-10">
+      {/* ── Ambient background blobs ── */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full bg-indigo-100/40 blur-[120px]" />
+        <div className="absolute top-[40%] -right-60 w-[500px] h-[500px] rounded-full bg-violet-100/30 blur-[100px]" />
+        <div className="absolute top-[60%] -left-60 w-[400px] h-[400px] rounded-full bg-sky-100/30 blur-[100px]" />
+      </div>
 
-        {/* Dynamic Floating 3D Background */}
-        <ThreeDScene />
+      <main className="flex flex-col items-center w-full">
 
-        {/* Decorative background gradients */}
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none z-0" />
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-slate-50 blur-3xl opacity-50 pointer-events-none z-0" />
+        {/* ════════════════════════════════════════════════
+            HERO SECTION
+        ════════════════════════════════════════════════ */}
+        <section
+          className="w-full flex flex-col items-center text-center pt-32 pb-16 px-6 relative"
+          aria-label="Hero section"
+        >
+          {/* 3D floating shape background */}
+          {/* <ThreeDScene /> */}
 
-        <div className="max-w-6xl w-full px-6 relative z-10 flex flex-col items-center">
+          {/* Grid-to-transparent fade mask */}
+          {/* <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white/60 via-white/40 to-transparent pointer-events-none z-0" /> */}
 
-          {/* Landing Hero Area */}
-          <AnimatePresence mode="wait">
-            {(jobState === "idle" || jobState === "error") && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="w-full flex flex-col items-center text-center space-y-6 pt-10"
-              >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-sm font-medium text-slate-600 mb-4 backdrop-blur-md">
-                  <FlaskConical className="w-4 h-4 text-indigo-500" />
-                  <span>Powered by Groq & FAISS</span>
-                </div>
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-sm font-medium text-slate-600 mb-8"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+            <span>3 powerful AI analysis modules</span>
+            <span className="inline-flex items-center gap-1 text-indigo-600 font-semibold">
+              New <ArrowRight className="w-3 h-3" />
+            </span>
+          </motion.div>
 
-                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-slate-900 max-w-5xl leading-[1.1]">
-                  Review any codebase <br className="hidden md:block" /> in seconds, not hours.
-                </h1>
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-[80px] font-black tracking-tighter text-slate-900 max-w-5xl leading-[1.05] mb-5"
+          >
+            Review any codebase{" "}
+            <br className="hidden sm:block" />
+            in{" "}
+            <span className="relative inline-block">
+              <span className="blue-100 text-blue-800 px-2 py-1 rounded-md font-mono tracking-tight">
+                seconds
+              </span>
+              {/* Underline decoration */}
+              <motion.span
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.7, duration: 0.5, ease: "easeOut" }}
+                className="absolute -bottom-1 left-0 right-0 h-[3px] bg-blue-500 rounded-full origin-left"
+              />
+            </span>
+            {", not hours."}
+          </motion.h1>
 
-                <p className="text-lg md:text-xl text-slate-500 max-w-2xl font-normal leading-relaxed mt-4">
-                  With our state of the art, cutting edge AI model, we scan your GitHub layers to unearth bugs, architecture smells, and security risks instantly.
-                </p>
+          {/* Subheadline */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22, duration: 0.6 }}
+            className="text-lg md:text-xl text-slate-500 max-w-2xl font-normal leading-relaxed mb-10"
+          >
+            Paste a GitHub URL. Our AI clones, parses, and reviews your entire
+            architecture  surfacing bugs, security risks, and refactoring
+            opportunities with surgical precision.
+          </motion.p>
 
-                {/* Input Form matching the sleek aesthetic */}
-                <form onSubmit={handleAnalyze} className="w-full max-w-xl mt-12 relative group">
-                  <div className="relative flex items-center shadow-2xl shadow-indigo-900/5 rounded-2xl bg-white p-2 border border-slate-200 ring-4 ring-white/50 transition-all hover:ring-slate-100 backdrop-blur-xl">
-                    <div className="pl-4 pr-2 text-slate-400">
-                      <Search className="w-5 h-5" />
-                    </div>
-                    <Input
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://github.com/owner/repository"
-                      className="flex-1 border-0 shadow-none focus-visible:ring-0 text-lg h-14 px-2 bg-transparent text-slate-800 placeholder:text-slate-400 font-medium"
-                    />
-                    <Button
-                      type="submit"
-                      className="h-14 px-8 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-base font-semibold flex items-center gap-2 transition-all active:scale-95"
-                    >
-                      Analyze <ArrowRight className="w-5 h-5" />
-                    </Button>
-                  </div>
-                  {error && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-sm font-medium mt-4 absolute w-full text-center">
-                      {error}
-                    </motion.p>
-                  )}
-                </form>
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.32, duration: 0.55 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14"
+          >
+            {/* Primary */}
+            <Link href="/repo-analysis" aria-label="Get started with CodeAnalyzer">
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  className="h-13 px-8 rounded-full bg-slate-900 text-white hover:bg-black text-base font-semibold flex items-center gap-2 shadow-xl shadow-slate-900/15 transition-colors"
+                >
+                  Get Started
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </Link>
 
-          {/* Processing State */}
-          <AnimatePresence>
-            {jobState === "processing" && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-3xl mt-20"
-              >
-                <div className="bg-white border border-slate-200 shadow-2xl shadow-slate-200/40 rounded-3xl p-12 flex flex-col items-center justify-center space-y-8 relative overflow-hidden backdrop-blur-xl">
-                  <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white/10" />
-                  <div className="absolute top-0 left-0 h-1.5 bg-slate-900 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
-
-                  <div className="relative z-10 flex flex-col items-center">
-                    <div className="p-5 bg-white shadow-sm border border-slate-100 rounded-2xl mb-6">
-                      <Loader2 className="w-12 h-12 animate-spin text-slate-900" />
-                    </div>
-                    <h3 className="text-3xl font-bold text-slate-900 tracking-tight">Extracting Insights</h3>
-                    <p className="text-slate-500 font-medium mt-3 text-lg">{statusMessage}</p>
-                  </div>
-
-                  <div className="w-full max-w-md bg-slate-100 rounded-full h-3 relative z-10 overflow-hidden shadow-inner">
-                    <motion.div
-                      className="h-full bg-slate-900 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ ease: "easeOut" }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Results Dashboard (Bento Grid Style) */}
-          {jobState === "complete" && result && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full max-w-6xl mt-12 bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-2xl shadow-slate-200/50"
-            >
-              <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-10 gap-4">
-                <div>
-                  <h2 className="text-4xl font-black tracking-tight text-slate-900">Analysis Report</h2>
-                  <div className="flex items-center gap-2 mt-3 text-slate-500">
-                    <FileCode2 className="w-5 h-5 text-indigo-500" />
-                    <span className="text-base font-medium">{url.replace("https://github.com/", "")}</span>
-                  </div>
-                </div>
+            {/* Secondary */}
+            {/* <Link href="/#features" aria-label="Book a demo">
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button
                   variant="outline"
-                  className="rounded-full px-6 h-12 font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                  onClick={() => {
-                    setJobState("idle");
-                    setUrl("");
-                    setResult(null);
-                  }}
+                  className="h-13 px-8 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-base font-semibold flex items-center gap-2 shadow-sm transition-all"
                 >
-                  Scan another repository
+                  <BookOpen className="w-4 h-4 text-slate-400" />
+                  Book Demo
                 </Button>
+              </motion.div>
+            </Link> */}
+          </motion.div>
+
+          {/* Social proof */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="flex flex-col items-center gap-3 mb-16"
+          >
+            <div className="flex -space-x-2">
+              {["from-violet-400 to-indigo-500", "from-sky-400 to-cyan-500", "from-emerald-400 to-teal-500", "from-rose-400 to-pink-500", "from-amber-400 to-orange-500"].map((g, i) => (
+                <div
+                  key={i}
+                  className={`w-8 h-8 rounded-full bg-gradient-to-br ${g} border-2 border-white ring-1 ring-white/50`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
+              <div className="flex items-center gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                ))}
               </div>
+              <span>Trusted by <strong className="text-slate-800">2,400+</strong> developers</span>
+            </div>
+          </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full">
+          {/* ── Interactive Dashboard Demo ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-6xl"
+          >
+            <InteractiveDashboard />
+          </motion.div>
 
-                {/* Score Bento Card (Small) */}
-                <div className="col-span-1 md:col-span-4 bg-slate-50 bg-grid-white border border-slate-200 rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden">
-                  <div className="relative z-10">
-                    <div className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 mb-4 tracking-wide uppercase">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      Overall Health
-                    </div>
-                    <div className="text-8xl font-black text-slate-900 tracking-tighter">
-                      {result.health_score || "B+"}
-                    </div>
-                  </div>
-                  <div className="mt-8 pt-6 border-t border-slate-200/60 relative z-10">
-                    <p className="text-sm font-medium text-slate-500">Based on architectural solidity, bug severity, and best-practice adherence.</p>
-                  </div>
-                </div>
+          {/* Trusted by bar */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="mt-16 flex flex-col items-center gap-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              Loved by engineers at
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {trustedBy.map((name, i) => (
+                <motion.span
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.85 + i * 0.05 }}
+                  className="text-slate-300 font-extrabold text-lg tracking-tight hover:text-slate-500 transition-colors cursor-default select-none"
+                >
+                  {name}
+                </motion.span>
+              ))}
+            </div>
+          </motion.div>
 
-                {/* Architecture Bento Card (Large) */}
-                <div className="col-span-1 md:col-span-8 bg-slate-900 text-white border border-slate-800 rounded-3xl shadow-xl shadow-slate-900/10 p-8 flex flex-col relative overflow-hidden">
-                  <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-500/20 blur-[100px] rounded-full" />
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 mb-6 tracking-wide uppercase">
-                      <LayoutTemplate className="w-4 h-4" />
-                      System Architecture
-                    </div>
-                    <p className="text-xl text-slate-300 leading-relaxed font-light flex-1">
-                      {result.architecture_summary || "Our AI could not extract a unified architecture map for this repository."}
-                    </p>
-                  </div>
-                </div>
+        </section>
 
-                {/* Bugs List */}
-                <div className="col-span-1 md:col-span-6 bg-white border border-slate-200 rounded-3xl p-8 hover:shadow-lg hover:shadow-slate-100 transition-all duration-300">
-                  <div className="inline-flex items-center gap-2 text-sm font-bold text-rose-500 mb-6 tracking-wide uppercase">
-                    <ShieldAlert className="w-4 h-4" />
-                    Vulnerabilities & Bugs ({result.bugs?.length || 0})
-                  </div>
-
-                  {result.bugs && result.bugs.length > 0 ? (
-                    <div className="space-y-4">
-                      {result.bugs.map((bug: any, idx: number) => (
-                        <div key={idx} className="p-5 rounded-2xl bg-rose-50/50 border border-rose-100 group">
-                          <h4 className="font-bold text-rose-900 text-lg">{bug.title}</h4>
-                          <p className="text-rose-700/80 mt-2 text-sm font-medium leading-relaxed">{bug.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
-                      No high-severity bugs discovered.
-                    </div>
-                  )}
-                </div>
-
-                {/* Improvements List */}
-                <div className="col-span-1 md:col-span-6 bg-white border border-slate-200 rounded-3xl p-8 hover:shadow-lg hover:shadow-slate-100 transition-all duration-300">
-                  <div className="inline-flex items-center gap-2 text-sm font-bold text-indigo-500 mb-6 tracking-wide uppercase">
-                    <FlaskConical className="w-4 h-4" />
-                    Refactoring Opportunities ({result.improvements?.length || 0})
-                  </div>
-
-                  {result.improvements && result.improvements.length > 0 ? (
-                    <div className="space-y-4">
-                      {result.improvements.map((imp: any, idx: number) => (
-                        <div key={idx} className="flex gap-5 p-5 rounded-2xl bg-indigo-50/30 border border-indigo-50 group">
-                          <div className="shrink-0 mt-1">
-                            <div className="w-2.5 h-2.5 rounded-full bg-indigo-400 ring-4 ring-indigo-100" />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-indigo-950 text-base">{imp.title}</h4>
-                            <p className="text-indigo-900/70 mt-2 text-sm font-medium leading-relaxed">{imp.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
-                      Codebase is highly optimized.
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </main>
-
-      {/* Conditionally reveal landing page marketing sections if idle */}
-      {jobState === "idle" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        {/* ════════════════════════════════════════════════
+            FEATURES / PRICING / FOOTER
+        ════════════════════════════════════════════════ */}
+        <div className="relative z-10 bg-white w-full">
           {/* <Features /> */}
           {/* <Pricing /> */}
-        </motion.div>
-      )}
+          <Footer />
+        </div>
 
-      <Footer />
+      </main>
     </div>
   );
 }
