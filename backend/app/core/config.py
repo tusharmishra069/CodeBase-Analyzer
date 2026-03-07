@@ -25,12 +25,25 @@ class Settings:
     MAX_FILE_COUNT: int = int(os.getenv("MAX_FILE_COUNT", "120"))
 
     # ── CORS ──────────────────────────────────────────────────────────────────
-    # Comma-separated list, e.g. "https://myapp.com,https://www.myapp.com"
+    # Comma-separated origins. In production never use "*".
+    # Dev default allows the local Next.js dev server only.
     ALLOWED_ORIGINS: list[str] = [
         o.strip()
-        for o in os.getenv("ALLOWED_ORIGINS", "*").split(",")
+        for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
         if o.strip()
     ]
+
+    # ── Authentication ────────────────────────────────────────────────────────
+    # A strong random secret used to sign/verify API keys.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    API_SECRET_KEY: str = os.getenv("API_SECRET_KEY", "")
+
+    # ── Rate limiting ─────────────────────────────────────────────────────────
+    # Uses the `limits` library string syntax: "N/period"
+    # Separate limits for cheap (status) vs expensive (AI) endpoints.
+    RATE_LIMIT_DEFAULT: str = os.getenv("RATE_LIMIT_DEFAULT", "60/minute")
+    RATE_LIMIT_AI: str = os.getenv("RATE_LIMIT_AI", "10/minute")
+    RATE_LIMIT_STATUS: str = os.getenv("RATE_LIMIT_STATUS", "120/minute")
 
     @property
     def is_production(self) -> bool:
@@ -42,6 +55,13 @@ class Settings:
             errors.append("GROQ_API_KEY is required")
         if not self.DATABASE_URL:
             errors.append("DATABASE_URL is required")
+        if not self.API_SECRET_KEY:
+            errors.append("API_SECRET_KEY is required")
+        if "*" in self.ALLOWED_ORIGINS and self.is_production:
+            errors.append(
+                "ALLOWED_ORIGINS must not contain '*' in production — "
+                "set explicit frontend origin(s)"
+            )
         if errors:
             raise ValueError("Missing required environment variables: " + ", ".join(errors))
 

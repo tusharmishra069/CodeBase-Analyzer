@@ -50,11 +50,13 @@ export default function ProfileReviewPage() {
 
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const apiKey  = process.env.NEXT_PUBLIC_API_KEY || '';
 
             const response = await fetch(`${baseUrl}/api/profile-review`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(apiKey ? { 'X-API-Key': apiKey } : {}),
                 },
                 body: JSON.stringify({ username: username.trim() }),
             });

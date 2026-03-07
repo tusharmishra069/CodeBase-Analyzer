@@ -1,6 +1,9 @@
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
+from app.core.limiter import limiter
+from app.core.security import require_api_key
+from app.core.config import settings
 from app.schemas.profile import (
     ProfileRequest,
     RoastResponse,
@@ -28,7 +31,12 @@ def _get_profile(username: str) -> dict:
 
 
 @router.post("/roast", response_model=RoastResponse)
-def handle_roast(req: ProfileRequest):
+@limiter.limit(settings.RATE_LIMIT_AI)
+def handle_roast(
+    request: Request,
+    req: ProfileRequest,
+    _key: str = Depends(require_api_key),
+):
     """Generate a brutal comedy roast for a GitHub profile."""
     profile_data = _get_profile(req.username)
 
@@ -52,7 +60,12 @@ def handle_roast(req: ProfileRequest):
 
 
 @router.post("/profile-review", response_model=ProfileReviewResponse)
-def handle_profile_review(req: ProfileRequest):
+@limiter.limit(settings.RATE_LIMIT_AI)
+def handle_profile_review(
+    request: Request,
+    req: ProfileRequest,
+    _key: str = Depends(require_api_key),
+):
     """Generate a structured, professional review for a GitHub profile."""
     profile_data = _get_profile(req.username)
 
@@ -77,7 +90,12 @@ def handle_profile_review(req: ProfileRequest):
 
 
 @router.post("/profile-suggestions", response_model=AiSuggestionsResponse)
-def handle_profile_suggestions(req: ProfileRequest):
+@limiter.limit(settings.RATE_LIMIT_AI)
+def handle_profile_suggestions(
+    request: Request,
+    req: ProfileRequest,
+    _key: str = Depends(require_api_key),
+):
     """Generate 5 targeted AI improvement suggestions for a GitHub profile."""
     profile_data = _get_profile(req.username)
 

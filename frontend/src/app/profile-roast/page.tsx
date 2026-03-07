@@ -50,13 +50,14 @@ export default function ProfileRoastPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
 
         try {
-            // In development, the backend is on port 8000. In production it's relative.
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const apiKey  = process.env.NEXT_PUBLIC_API_KEY || '';
 
             const response = await fetch(`${baseUrl}/api/roast`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(apiKey ? { 'X-API-Key': apiKey } : {}),
                 },
                 body: JSON.stringify({ username: username.trim() }),
             });

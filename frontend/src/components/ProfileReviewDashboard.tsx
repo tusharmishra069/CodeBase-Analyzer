@@ -211,9 +211,13 @@ function AiSuggestionsPanel({ username }: { username: string }) {
     setErrorMsg('');
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiKey  = process.env.NEXT_PUBLIC_API_KEY || '';
       const res = await fetch(`${baseUrl}/api/profile-suggestions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'X-API-Key': apiKey } : {}),
+        },
         body: JSON.stringify({ username }),
       });
       if (!res.ok) {

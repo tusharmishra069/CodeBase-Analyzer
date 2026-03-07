@@ -132,6 +132,14 @@ export default function RepoAnalysisDashboard() {
     const [result, setResult] = useState<any>(null);
 
     const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api`;
+    const API_KEY  = process.env.NEXT_PUBLIC_API_KEY || "";
+
+    const apiFetch = (path: string, init: RequestInit = {}) => {
+        const headers = new Headers(init.headers);
+        headers.set("Content-Type", "application/json");
+        if (API_KEY) headers.set("X-API-Key", API_KEY);
+        return fetch(`${API_BASE}${path}`, { ...init, headers });
+    };
 
     const handleAnalyze = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -145,9 +153,8 @@ export default function RepoAnalysisDashboard() {
         setStatusMessage("Connecting to API...");
         window.scrollTo({ top: 0, behavior: "smooth" });
         try {
-            const res = await fetch(`${API_BASE}/analyze`, {
+            const res = await apiFetch(`/analyze`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ url }),
             });
             if (!res.ok) throw new Error("Failed to start analysis");
@@ -164,7 +171,7 @@ export default function RepoAnalysisDashboard() {
         const checkStatus = async () => {
             if (!jobId) return;
             try {
-                const res = await fetch(`${API_BASE}/jobs/${jobId}/status`);
+                const res = await apiFetch(`/jobs/${jobId}/status`);
                 const data = await res.json();
                 setProgress(data.progress);
                 setStatusMessage(data.message);
