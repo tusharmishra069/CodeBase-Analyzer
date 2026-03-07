@@ -130,7 +130,7 @@ export default function RepoAnalysisDashboard() {
     const [jobId, setJobId] = useState<string | null>(null);
     const [result, setResult] = useState<any>(null);
 
-    const API_BASE = "http://localhost:8000/api";
+    const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api`;
 
     const handleAnalyze = async (e: React.FormEvent) => {
         e.preventDefault();
