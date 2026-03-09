@@ -87,8 +87,18 @@ RULES:
 
 class CodeAnalyzer:
     def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        # Delay loading HuggingFaceEmbeddings until first use.
+        # Loading it here costs ~300 MB at startup and OOMs Render's free tier.
+        self._embeddings = None
         self.groq_client = Groq(api_key=settings.GROQ_API_KEY)
+
+    @property
+    def embeddings(self):
+        if self._embeddings is None:
+            print("[ai_engine] Loading embedding model (first request)...")
+            self._embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+            print("[ai_engine] Embedding model ready")
+        return self._embeddings
 
     def create_vector_store(self, code_documents: list[dict]) -> FAISS:
         """Chunks files using code-aware separators and builds a FAISS vector store."""

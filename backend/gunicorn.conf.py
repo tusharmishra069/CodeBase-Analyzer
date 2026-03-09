@@ -7,10 +7,19 @@ port = os.environ.get("PORT", "10000")
 bind = f"0.0.0.0:{port}"
 
 # ── Workers ───────────────────────────────────────────────────────────────────
-# Keep workers low for CPU-bound AI workloads; UvicornWorker handles async I/O
-workers = 2
+# FREE TIER (512 MB): 1 worker only—each UvicornWorker loads torch+sentence-
+# transformers (~300 MB). 2 workers = instant OOM on Render free tier.
+workers = 1
 worker_class = "uvicorn.workers.UvicornWorker"
 threads = 1
+
+# ── Memory optimisations ─────────────────────────────────────────────────────────
+# preload_app loads heavy libs once before forking workers (saves RAM)
+preload_app = True
+# Recycle worker after N requests to prevent slow memory leaks
+max_requests = 200
+max_requests_jitter = 40
+worker_tmp_dir = "/tmp"
 
 # ── Timeouts ─────────────────────────────────────────────────────────────────
 # AI analysis can take up to 3 min on large repos
