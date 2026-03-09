@@ -67,7 +67,8 @@ class Settings:
 
 
 def _configure_logging(env: str) -> None:
-    level = "WARNING" if env == "production" else "INFO"
+    # Keep INFO in production so Render logs show startup status and errors
+    level = "INFO"
     logging.config.dictConfig({
         "version": 1,
         "disable_existing_loggers": False,

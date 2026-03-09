@@ -20,9 +20,19 @@ logger = logging.getLogger(__name__)
 # ── Lifespan: validate env & create tables once on startup ────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings.validate()
-    Base.metadata.create_all(bind=engine)
-    logger.info("Startup complete [env=%s]", settings.APP_ENV)
+    try:
+        # Log every env flag so Render's log panel shows what was injected
+        print(f"[startup] APP_ENV      = {settings.APP_ENV}")
+        print(f"[startup] GROQ_API_KEY = {'SET' if settings.GROQ_API_KEY else 'MISSING'}")
+        print(f"[startup] DATABASE_URL = {'SET' if settings.DATABASE_URL else 'MISSING'}")
+        print(f"[startup] API_SECRET   = {'SET' if settings.API_SECRET_KEY else 'MISSING'}")
+        print(f"[startup] ALLOWED_ORIGINS = {settings.ALLOWED_ORIGINS}")
+        settings.validate()
+        Base.metadata.create_all(bind=engine)
+        print("[startup] OK — all checks passed")
+    except Exception as exc:
+        print(f"[startup] FAILED: {exc}")
+        raise
     yield
     logger.info("Shutting down")
 
