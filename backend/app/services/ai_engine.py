@@ -197,9 +197,40 @@ class CodeAnalyzer:
         print(f"[ai_engine] Retrieved {len(chunks)} unique chunks.")
         return "\n\n---\n\n".join(chunks)
 
-    def analyze_codebase(self, vectorstore: FAISS) -> dict:
-        """Runs multi-query RAG then calls Groq for a structured code review."""
-        context = self._multi_query_retrieve(vectorstore)
+    def _single_query_retrieve(self, vectorstore: FAISS, query: str, k: int = 4) -> list[str]:
+        """
+        Single query retrieval — used in parallel by worker via ThreadPoolExecutor.
+        Returns list of chunk strings (no Document objects).
+        """
+        if isinstance(vectorstore, list):
+            # Lite mode fallback — simple token matching
+            from collections import Counter
+            import re
+            q_tokens = Counter(re.findall(r"\w+", query.lower()))
+            scored = []
+            for chunk in vectorstore:
+                c_tokens = Counter(re.findall(r"\w+", chunk.lower()))
+                score = sum(min(q_tokens[w], c_tokens[w]) for w in q_tokens)
+                if score > 0:
+                    scored.append((score, chunk))
+            scored.sort(reverse=True, key=lambda x: x[0])
+            return [c for _, c in scored[:k]]
+        else:
+            # FAISS mode
+            try:
+                docs = vectorstore.similarity_search(query, k=k)
+                return [d.page_content if hasattr(d, "page_content") else str(d) for d in docs]
+            except Exception as exc:
+                print(f"[ai_engine] Retrieval error for '{query}': {exc}")
+                return []
+
+    def analyze_codebase_with_chunks(self, chunks: list[str]) -> dict:
+        """
+        Analyze using pre-retrieved chunks (no FAISS/embedding call inside).
+        Fast path for parallel retrieval results.
+        """
+        # Take top 25 chunks to avoid token bloat
+        context = "\n\n---\n\n".join(chunks[:25])
         user_message = ANALYSIS_USER_TEMPLATE.format(context=context)
 
         print("[ai_engine] Querying Groq LLM...")
@@ -236,3 +267,4 @@ class CodeAnalyzer:
                 "bugs": [],
                 "improvements": [],
             }
+
