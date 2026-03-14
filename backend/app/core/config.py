@@ -17,15 +17,15 @@ class Settings:
     # ── AI Engine tuning (Railway/low-memory friendly) ─────────────────────
     EMBEDDING_MODEL_NAME: str = os.getenv(
         "EMBEDDING_MODEL_NAME",
-        "all-MiniLM-L6-v2",
+        "paraphrase-MiniLM-L3-v2",  # 30 MB vs 90 MB — 5-10x faster embedding
     )
-    EMBEDDING_BATCH_SIZE: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "16"))
-    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "1000"))
-    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "100"))
-    RETRIEVAL_QUERY_COUNT: int = int(os.getenv("RETRIEVAL_QUERY_COUNT", "4"))
-    RETRIEVAL_K_PER_QUERY: int = int(os.getenv("RETRIEVAL_K_PER_QUERY", "4"))
-    MAX_EMBED_BYTES: int = int(os.getenv("MAX_EMBED_BYTES", str(2 * 1024 * 1024)))
-    LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "1400"))
+    EMBEDDING_BATCH_SIZE: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "32"))  # Faster model, larger batches
+    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "500"))  # Smaller chunks = faster to embed
+    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "50"))  # Less overlap = less redundant embeddings
+    RETRIEVAL_QUERY_COUNT: int = int(os.getenv("RETRIEVAL_QUERY_COUNT", "2"))  # 2 parallel > 4 serial
+    RETRIEVAL_K_PER_QUERY: int = int(os.getenv("RETRIEVAL_K_PER_QUERY", "5"))  # Targeted results
+    MAX_EMBED_BYTES: int = int(os.getenv("MAX_EMBED_BYTES", str(1 * 1024 * 1024)))  # 1 MB = faster
+    LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "1200"))  # Shorter responses
 
     # ── Database ──────────────────────────────────────────────────────────────
     DATABASE_URL: str = os.getenv("DATABASE_URL", "")
@@ -34,10 +34,10 @@ class Settings:
     GITHUB_TOKEN: str | None = os.getenv("GITHUB_TOKEN")
 
     # ── Repo parser limits ────────────────────────────────────────────────────────────────
-    # Render free tier (512 MB): keep these conservative to stay in RAM.
-    # 256 KB per file, 60 files max, 4 MB total enforced in repo_parser.
-    MAX_FILE_SIZE_BYTES: int = int(os.getenv("MAX_FILE_SIZE_BYTES", str(256 * 1024)))  # 256 KB
-    MAX_FILE_COUNT: int = int(os.getenv("MAX_FILE_COUNT", "60"))
+    # Railway free tier (512 MB): keep these conservative to stay in RAM.
+    # 200 KB per file, 30 files max, 2 MB total content — faster analysis, still comprehensive.
+    MAX_FILE_SIZE_BYTES: int = int(os.getenv("MAX_FILE_SIZE_BYTES", str(200 * 1024)))  # 200 KB per file
+    MAX_FILE_COUNT: int = int(os.getenv("MAX_FILE_COUNT", "30"))  # Cap at 30 files
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     # Comma-separated origins. In production never use "*".

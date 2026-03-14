@@ -101,9 +101,8 @@ def analyze_github_repo(job_id: str, repository_url: str) -> None:
         # ── 4. Parallel multi-query retrieval ──────────────────────────────────
         retrieval_start = time.time()
         queries = [
-            "architecture design patterns structure",
-            "bugs errors exceptions error handling security",
-            "performance optimization improvements scalability"
+            "bugs errors security vulnerabilities exceptions",
+            "architecture design patterns scalability performance"
         ]
 
         # ThreadPoolExecutor — FAISS releases GIL during searches

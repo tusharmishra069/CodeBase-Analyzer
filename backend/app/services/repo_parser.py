@@ -93,12 +93,12 @@ def parse_codebase(repo_dir: str) -> list[dict]:
     Walks the repository and returns a list of {"path": str, "content": str}
     dicts, entry-point files ordered first.
 
-    Hard limits (prevents OOM on Render free tier):
+    Hard limits (prevents OOM on Railway free tier):
       - MAX_FILE_COUNT   — cap number of files processed
       - MAX_FILE_SIZE_BYTES — per-file cap
-      - MAX_TOTAL_CONTENT_BYTES (4 MB) — total raw text cap across all files
+      - MAX_TOTAL_CONTENT_BYTES (2 MB) — total raw text cap across all files
     """
-    _MAX_TOTAL_CONTENT_BYTES = 4 * 1024 * 1024  # 4 MB total raw source text
+    _MAX_TOTAL_CONTENT_BYTES = 2 * 1024 * 1024  # 2 MB total raw source text
     repo_path = Path(repo_dir)
     entry_docs: list[dict] = []
     regular_docs: list[dict] = []

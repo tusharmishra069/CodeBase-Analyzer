@@ -35,13 +35,10 @@ def get_embeddings() -> HuggingFaceEmbeddings:
     return _EMBEDDINGS
 
 
-# ── Retrieval queries — each probes a different code quality dimension ────────
+# ── Retrieval queries — focused on critical issues (2 queries run in parallel) ──
 RETRIEVAL_QUERIES = [
-    "entry point main application server setup startup routing middleware",
-    "database models schema ORM queries migrations data layer",
-    "authentication authorization security validation error handling",
-    "external API integrations third-party services environment configuration secrets",
-    "business logic core algorithms data processing patterns design",
+    "bugs errors security vulnerabilities exceptions error handling",
+    "architecture design patterns scalability performance optimization",
 ]
 
 # ── System prompt — Staff-Engineer-grade review (RSCIT framework) ─────────────
